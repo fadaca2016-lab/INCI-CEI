@@ -24,7 +24,7 @@ st.markdown("<p style='text-align: center; color: #ad1457;'>Auditoría técnica 
 # 2. CONFIGURACIÓN IA
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
 else:
     st.error("⚠️ Falta la API KEY en los Secrets de Streamlit Cloud.")
 
