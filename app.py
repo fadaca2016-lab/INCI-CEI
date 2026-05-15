@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# --- ESTÉTICA CEI ---
+# --- ESTÉTICA CEI (Rosa y Profesional) ---
 st.set_page_config(page_title="CEI - Analizador INCI", layout="centered")
 
 st.markdown("""
@@ -19,19 +19,14 @@ st.markdown("""
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='font-size: 1.2em;'>Analizador de Activos (INCI)</h2>", unsafe_allow_html=True)
 
-# --- CONEXIÓN TÉCNICA REFORZADA ---
-try:
-    if "GEMINI_API_KEY" in st.secrets:
-        # Forzamos la configuración
-        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        
-        # PROBAMOS EL MODELO POR SU NOMBRE COMPLETO DE SISTEMA
-        # Si este falla, el problema es la API KEY o la Región del servidor
-        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
-    else:
-        st.error("⚠️ Error: No encontré la llave en los Secrets.")
-except Exception as e:
-    st.error(f"Error de configuración: {e}")
+# --- CONEXIÓN TÉCNICA (Forzando la Versión Estable) ---
+if "GEMINI_API_KEY" in st.secrets:
+    api_key = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=api_key)
+    # Definimos el modelo por fuera para que sea más limpio
+    model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    st.error("⚠️ Falta la llave GEMINI_API_KEY en los Secrets.")
 
 st.markdown("---")
 
@@ -43,17 +38,18 @@ if foto_inci:
     st.image(img, caption="Etiqueta cargada", use_container_width=True)
     
     if st.button("EJECUTAR ANALISIS"):
-        with st.spinner("Analizando componentes..."):
+        with st.spinner("Buscando activos..."):
             try:
-                # Prompt directo y sencillo para la primera prueba
-                response = model.generate_content(["Analiza el INCI de esta imagen. Responde en español.", img])
+                # Maniobra de seguridad: enviamos el contenido como una lista simple
+                response = model.generate_content(["Analiza el INCI de esta etiqueta cosmética. Responde en español.", img])
                 
                 st.markdown("### 📋 Resultados:")
                 st.write(response.text)
                 
             except Exception as e:
+                # Si esto falla, mostramos el error exacto para ver si cambió
                 st.error(f"Error del motor: {e}")
-                st.info("Sugerencia: Revisá si la API Key tiene restricciones en Google AI Studio.")
+                st.info("Fabio, si sigue el 404, el problema es el 'surtidor' (Google Cloud) y no el bólido.")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
