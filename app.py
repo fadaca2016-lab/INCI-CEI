@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-import os
 
 # --- ESTÉTICA CEI ---
 st.set_page_config(page_title="CEI - Analizador INCI", layout="centered")
@@ -19,16 +18,15 @@ st.markdown("""
 
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 
-# --- CONEXIÓN TÉCNICA (Maniobra Definitiva) ---
+# --- CONEXIÓN TÉCNICA (Maniobra de Último Recurso) ---
 if "GEMINI_API_KEY" in st.secrets:
-    # Usamos la configuración estándar pero con un truco de reseteo
-    api_key = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=api_key)
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     
-    # FORZAMOS el modelo usando la versión estable directamente
-    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
+    # Probamos con este modelo que suele ser el más compatible con v1beta y v1
+    # Es el modelo que "siempre está"
+    model = genai.GenerativeModel('gemini-1.0-pro-vision-latest')
 else:
-    st.error("⚠️ Falta la llave en los Secrets.")
+    st.error("⚠️ No se encontró la llave en los Secrets.")
 
 st.markdown("---")
 
@@ -40,17 +38,17 @@ if foto_inci:
     st.image(img, caption="Etiqueta cargada", use_container_width=True)
     
     if st.button("EJECUTAR ANALISIS"):
-        with st.spinner("Analizando activos..."):
+        with st.spinner("El Dr. Nano (IA) buscando activos..."):
             try:
-                # Pedido ultra-simplificado para que no rebote
-                response = model.generate_content(["Analiza el INCI. Responde en español.", img])
+                # Pedido directo y corto para no marear al motor
+                response = model.generate_content(["Analiza el INCI de esta imagen. Responde en español.", img])
                 
                 st.markdown("### 📋 Resultados:")
                 st.write(response.text)
                 
             except Exception as e:
-                st.error(f"Error del motor: {e}")
-                st.info("Fabio: Si sale 404 v1beta, el problema es la región del servidor de Streamlit.")
+                st.error(f"Error técnico: {e}")
+                st.info("Fabio, si esto falla, es que Google Cloud está restringiendo el acceso por región.")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
