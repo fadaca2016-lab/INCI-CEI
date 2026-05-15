@@ -24,7 +24,7 @@ try:
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
         # Cambiamos a gemini-2.0-flash que es el motor más moderno y estable hoy
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash-8b')
     else:
         st.error("⚠️ Falta la llave GEMINI_API_KEY en los Secrets.")
 except Exception as e:
