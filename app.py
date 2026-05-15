@@ -19,20 +19,23 @@ st.markdown("""
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='font-size: 1.2em;'>Analizador de Activos (INCI)</h2>", unsafe_allow_html=True)
 
-# --- CONEXIÓN TÉCNICA (Motor Estándar) ---
+# --- CONEXIÓN TÉCNICA REFORZADA ---
 try:
     if "GEMINI_API_KEY" in st.secrets:
+        # Forzamos la configuración
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # Usamos 'gemini-1.5-flash-latest' que es el que menos rebota errores de versión
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
+        # PROBAMOS EL MODELO POR SU NOMBRE COMPLETO DE SISTEMA
+        # Si este falla, el problema es la API KEY o la Región del servidor
+        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
     else:
-        st.error("⚠️ Error: No encontré la llave GEMINI_API_KEY en los Secrets de Streamlit.")
+        st.error("⚠️ Error: No encontré la llave en los Secrets.")
 except Exception as e:
     st.error(f"Error de configuración: {e}")
 
 st.markdown("---")
 
-# --- INTERFAZ DE USUARIO ---
+# --- INTERFAZ ---
 foto_inci = st.file_uploader("Subí la foto de la etiqueta (INCI)", type=['jpg', 'jpeg', 'png'])
 
 if foto_inci:
@@ -42,17 +45,15 @@ if foto_inci:
     if st.button("EJECUTAR ANALISIS"):
         with st.spinner("Analizando componentes..."):
             try:
-                # El pedido específico de Fabio para Olga
-                prompt = "Analiza el INCI de esta imagen. Lista activos, advertencias y biotipo recomendado. Responde en español."
-                
-                response = model.generate_content([prompt, img])
+                # Prompt directo y sencillo para la primera prueba
+                response = model.generate_content(["Analiza el INCI de esta imagen. Responde en español.", img])
                 
                 st.markdown("### 📋 Resultados:")
                 st.write(response.text)
                 
             except Exception as e:
                 st.error(f"Error del motor: {e}")
-                st.info("Nota técnica: Si sale error 404, revisá el archivo requirements.txt en GitHub.")
+                st.info("Sugerencia: Revisá si la API Key tiene restricciones en Google AI Studio.")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
