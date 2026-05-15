@@ -19,11 +19,16 @@ st.markdown("""
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='font-size: 1.2em;'>Analizador de Activos (INCI)</h2>", unsafe_allow_html=True)
 
-# 2. CONEXIÓN TÉCNICA (Rectificación Total)
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-else:
-    st.error("⚠️ Falta la llave GEMINI_API_KEY en los Secrets.")
+# 2. CONEXIÓN TÉCNICA (Motor v3.1 / 2.0 Flash)
+try:
+    if "GEMINI_API_KEY" in st.secrets:
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        # Cambiamos a gemini-2.0-flash que es el motor más moderno y estable hoy
+        model = genai.GenerativeModel('gemini-2.0-flash')
+    else:
+        st.error("⚠️ Falta la llave GEMINI_API_KEY en los Secrets.")
+except Exception as e:
+    st.error(f"Error de configuración: {e}")
 
 st.markdown("---")
 
@@ -34,24 +39,20 @@ if foto_inci:
     img = Image.open(foto_inci)
     st.image(img, caption="Etiqueta para analizar", use_container_width=True)
     
-    if st.button("🔍 EJECUTAR ANALISIS QUÍMICO"):
-        with st.spinner("Analizando componentes..."):
+    if st.button("🔍 EJECUTAR ANALISIS"):
+        with st.spinner("Conectando con el motor más moderno..."):
             try:
-                # ACÁ ESTÁ EL CAMBIO: Usamos 'gemini-1.5-flash' a secas
-                # El motor 1.5 es el más nuevo y estable para esto
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # Prompt directo para evitar filtros innecesarios
+                prompt = "Analiza el INCI de esta imagen. Lista activos y biotipo recomendado."
                 
-                response = model.generate_content([
-                    "Analiza el INCI de esta imagen. Lista activos, advertencias y biotipo recomendado.",
-                    img
-                ])
+                response = model.generate_content([prompt, img])
                 
                 st.markdown("### 📋 Resultados:")
                 st.write(response.text)
                 
             except Exception as e:
                 st.error(f"Error del motor: {e}")
-                st.info("Fabio, si ves un 404 acá, el problema es la versión de la librería en requirements.txt")
+                st.info("Fabio, si el error persiste, probá cambiar el nombre del modelo a 'gemini-1.5-flash-latest'")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
