@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# 1. ESTÉTICA CEI
+# --- ESTÉTICA CEI ---
 st.set_page_config(page_title="CEI - Analizador INCI", layout="centered")
 
 st.markdown("""
@@ -19,31 +19,31 @@ st.markdown("""
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='font-size: 1.2em;'>Analizador de Activos (INCI)</h2>", unsafe_allow_html=True)
 
-# 2. CONEXIÓN TÉCNICA (Motor v3.1 / 2.0 Flash)
+# --- CONEXIÓN TÉCNICA (Motor Estándar) ---
 try:
     if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # Cambiamos a gemini-2.0-flash que es el motor más moderno y estable hoy
-        model = genai.GenerativeModel('gemini-1.5-flash-8b')
+        # Usamos 'gemini-1.5-flash-latest' que es el que menos rebota errores de versión
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
     else:
-        st.error("⚠️ Falta la llave GEMINI_API_KEY en los Secrets.")
+        st.error("⚠️ Error: No encontré la llave GEMINI_API_KEY en los Secrets de Streamlit.")
 except Exception as e:
     st.error(f"Error de configuración: {e}")
 
 st.markdown("---")
 
-# 3. INTERFAZ
+# --- INTERFAZ DE USUARIO ---
 foto_inci = st.file_uploader("Subí la foto de la etiqueta (INCI)", type=['jpg', 'jpeg', 'png'])
 
 if foto_inci:
     img = Image.open(foto_inci)
-    st.image(img, caption="Etiqueta para analizar", use_container_width=True)
+    st.image(img, caption="Etiqueta cargada", use_container_width=True)
     
-    if st.button("🔍 EJECUTAR ANALISIS"):
-        with st.spinner("Conectando con el motor más moderno..."):
+    if st.button("EJECUTAR ANALISIS"):
+        with st.spinner("Analizando componentes..."):
             try:
-                # Prompt directo para evitar filtros innecesarios
-                prompt = "Analiza el INCI de esta imagen. Lista activos y biotipo recomendado."
+                # El pedido específico de Fabio para Olga
+                prompt = "Analiza el INCI de esta imagen. Lista activos, advertencias y biotipo recomendado. Responde en español."
                 
                 response = model.generate_content([prompt, img])
                 
@@ -52,7 +52,7 @@ if foto_inci:
                 
             except Exception as e:
                 st.error(f"Error del motor: {e}")
-                st.info("Fabio, si el error persiste, probá cambiar el nombre del modelo a 'gemini-1.5-flash-latest'")
+                st.info("Nota técnica: Si sale error 404, revisá el archivo requirements.txt en GitHub.")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
