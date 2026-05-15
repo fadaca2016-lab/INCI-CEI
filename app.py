@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
+import os
 
 # --- ESTÉTICA CEI ---
 st.set_page_config(page_title="CEI - Analizador INCI", layout="centered")
@@ -18,13 +19,16 @@ st.markdown("""
 
 st.markdown("<h1>Centro de Estética Integral</h1>", unsafe_allow_html=True)
 
-# --- CONEXIÓN TÉCNICA (La Maniobra Maestra) ---
+# --- CONEXIÓN TÉCNICA (Maniobra Definitiva) ---
 if "GEMINI_API_KEY" in st.secrets:
-    # Usamos transport='rest' para forzar a que no use la v1beta que falla
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"], transport='rest')
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Usamos la configuración estándar pero con un truco de reseteo
+    api_key = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=api_key)
+    
+    # FORZAMOS el modelo usando la versión estable directamente
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 else:
-    st.error("⚠️ No encontré la GEMINI_API_KEY en los Secrets.")
+    st.error("⚠️ Falta la llave en los Secrets.")
 
 st.markdown("---")
 
@@ -36,17 +40,17 @@ if foto_inci:
     st.image(img, caption="Etiqueta cargada", use_container_width=True)
     
     if st.button("EJECUTAR ANALISIS"):
-        with st.spinner("El Dr. Nano (IA) analizando..."):
+        with st.spinner("Analizando activos..."):
             try:
-                # Pedido directo
-                response = model.generate_content(["Analiza los activos de este INCI. Responde en español.", img])
+                # Pedido ultra-simplificado para que no rebote
+                response = model.generate_content(["Analiza el INCI. Responde en español.", img])
                 
                 st.markdown("### 📋 Resultados:")
                 st.write(response.text)
                 
             except Exception as e:
                 st.error(f"Error del motor: {e}")
-                st.info("Fabio, si sigue el 404, revisá que la clave en Secrets sea EXACTAMENTE la que generaste.")
+                st.info("Fabio: Si sale 404 v1beta, el problema es la región del servidor de Streamlit.")
 
 st.markdown("---")
 st.caption("Gestión Técnica: Fabio - CEI 2026")
